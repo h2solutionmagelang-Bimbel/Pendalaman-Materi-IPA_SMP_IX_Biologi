@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Asesmen & Kuis</title>
+<style>
+  :root{
+    --bg:#0b1120; --bg-soft:#0f172a; --card:#151f36; --card-hover:#1b2745;
+    --border:#243049; --text:#e6ebf5; --muted:#8b97b0; --accent:#38bdf8;
+    --accent-soft:rgba(56,189,248,.12); --good:#34d399; --warn:#fbbf24;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);}
+  .wrap{max-width:900px;margin:0 auto;padding:20px 16px 60px;}
+
+  header{margin-bottom:20px;}
+  header h1{font-size:1.5rem;margin:0 0 4px;display:flex;align-items:center;gap:8px;}
+  header p{color:var(--muted);margin:0;font-size:.85rem;line-height:1.5;}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0;}
+  .stat{background:linear-gradient(160deg,var(--card),var(--bg-soft));border:1px solid var(--border);border-radius:12px;padding:14px 12px;text-align:center;}
+  .stat .num{font-size:1.5rem;font-weight:700;color:var(--accent);line-height:1.1;}
+  .stat .label{font-size:.68rem;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.03em;}
+
+  .controls{display:flex;flex-direction:column;gap:10px;margin-bottom:16px;}
+  input#search{width:100%;padding:12px 14px;border-radius:10px;border:1px solid var(--border);background:var(--bg-soft);color:var(--text);font-size:.95rem;}
+  input#search:focus{outline:none;border-color:var(--accent);}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .chip{padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--bg-soft);color:var(--muted);font-size:.78rem;cursor:pointer;white-space:nowrap;user-select:none;}
+  .chip.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600;}
+
+  .group{margin-bottom:22px;}
+  .group-title{font-size:.8rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:0 0 10px;padding-left:2px;}
+  .list{display:flex;flex-direction:column;gap:10px;}
+
+  .item{background:var(--card);border-radius:12px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;text-decoration:none;color:var(--text);border:1px solid var(--border);transition:.15s;}
+  .item:hover{border-color:var(--accent);background:var(--card-hover);transform:translateX(2px);}
+  .item-left{display:flex;gap:12px;align-items:flex-start;min-width:0;}
+  .icon{width:38px;height:38px;border-radius:9px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+  .title{font-weight:600;font-size:.93rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .meta{font-size:.72rem;color:var(--muted);margin-top:3px;display:flex;gap:6px;flex-wrap:wrap;}
+  .meta .type-badge{background:rgba(148,163,184,.12);padding:1px 7px;border-radius:6px;}
+  .arrow{color:var(--accent);font-size:.78rem;flex-shrink:0;}
+
+  .empty{color:var(--muted);text-align:center;padding:44px 16px;font-size:.88rem;line-height:1.7;background:var(--card);border-radius:12px;border:1px dashed var(--border);}
+  .empty code{background:var(--bg-soft);padding:2px 6px;border-radius:5px;color:var(--accent);}
+
+  @media(min-width:640px){ .stats{grid-template-columns:repeat(4,1fr);} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>📊 Dashboard Asesmen & Kuis</h1>
+    <p>Daftar dibangun dari <code style="background:var(--bg-soft);padding:1px 5px;border-radius:4px;color:var(--accent)">manifest.js</code>. Jalankan <code style="background:var(--bg-soft);padding:1px 5px;border-radius:4px;color:var(--accent)">generate_manifest.py</code> setelah menambah file, lalu refresh.</p>
+  </header>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="controls">
+    <input id="search" type="text" placeholder="Cari judul kuis...">
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div id="content"><div class="empty">Memuat manifest.js...</div></div>
+</div>
+
+<script src="manifest.js" onerror="window.__manifestMissing=true"></script>
+<script>
+const ICONS = {"Kimia":"🧪","IPA":"🔬","Matematika":"📐","Fisika":"⚛️","Biologi":"🧬","Umum":"📄"};
+let activeFilter = "Semua";
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function renderStats(data){
+  const totalKuis = data.length;
+  const subjects = [...new Set(data.map(d => d.subject))];
+  const totalSoalKnown = data.reduce((sum, d) => sum + (d.question_count || 0), 0);
+  const latest = data[0] ? data[0].modified.split(' ')[0] : '-';
+  document.getElementById('stats').innerHTML = `
+    <div class="stat"><div class="num">${totalKuis}</div><div class="label">Total Kuis</div></div>
+    <div class="stat"><div class="num">${subjects.length}</div><div class="label">Mata Pelajaran</div></div>
+    <div class="stat"><div class="num">${totalSoalKnown || '–'}</div><div class="label">Estimasi Soal</div></div>
+    <div class="stat"><div class="num">${latest}</div><div class="label">Update Terakhir</div></div>
+  `;
+}
+
+function renderChips(data){
+  const subjects = ["Semua", ...new Set(data.map(d => d.subject))];
+  document.getElementById('chips').innerHTML = subjects.map(s =>
+    `<div class="chip ${s===activeFilter?'active':''}" data-subject="${escapeHtml(s)}">${escapeHtml(s)}</div>`
+  ).join('');
+  document.querySelectorAll('.chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      activeFilter = chip.dataset.subject;
+      applyFilters(window.__ALL_DATA__);
+    });
+  });
+}
+
+function renderList(data){
+  const content = document.getElementById('content');
+  if(!data.length){
+    content.innerHTML = '<div class="empty">Tidak ada kuis yang cocok dengan pencarian/filter.</div>';
+    return;
+  }
+  // Kelompokkan per mata pelajaran
+  const groups = {};
+  data.forEach(d => { (groups[d.subject] = groups[d.subject] || []).push(d); });
+
+  content.innerHTML = Object.keys(groups).map(subject => `
+    <div class="group">
+      <div class="group-title">${ICONS[subject] || '📄'} ${escapeHtml(subject)} · ${groups[subject].length} kuis</div>
+      <div class="list">
+        ${groups[subject].map(d => `
+          <a class="item" href="${escapeHtml(d.file)}">
+            <div class="item-left">
+              <div class="icon">${ICONS[d.subject] || '📄'}</div>
+              <div>
+                <div class="title">${escapeHtml(d.title)}</div>
+                <div class="meta">
+                  <span class="type-badge">${escapeHtml(d.type)}</span>
+                  <span>${d.question_count ? d.question_count + ' soal (estimasi)' : ''}</span>
+                  <span>${escapeHtml(d.modified)}</span>
+                </div>
+              </div>
+            </div>
+            <span class="arrow">Buka →</span>
+          </a>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function applyFilters(data){
+  const q = document.getElementById('search').value.toLowerCase();
+  let filtered = data;
+  if(activeFilter !== "Semua") filtered = filtered.filter(d => d.subject === activeFilter);
+  if(q) filtered = filtered.filter(d => d.title.toLowerCase().includes(q) || d.file.toLowerCase().includes(q));
+  renderList(filtered);
+}
+
+function init(){
+  const content = document.getElementById('content');
+  if(typeof QUIZ_MANIFEST === 'undefined'){
+    content.innerHTML = `<div class="empty">
+      <strong>manifest.js belum ditemukan.</strong><br><br>
+      1. Pastikan <code>generate_manifest.py</code> ada di folder yang sama dengan file-file kuis.<br>
+      2. Jalankan: <code>python generate_manifest.py</code><br>
+      3. Refresh halaman ini.
+    </div>`;
+    document.getElementById('stats').innerHTML = '';
+    return;
+  }
+  window.__ALL_DATA__ = QUIZ_MANIFEST;
+  renderStats(QUIZ_MANIFEST);
+  renderChips(QUIZ_MANIFEST);
+  renderList(QUIZ_MANIFEST);
+  document.getElementById('search').addEventListener('input', () => applyFilters(QUIZ_MANIFEST));
+}
+window.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
