@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ASTS IPA (Biologi) Kelas IX — LMS Interaktif</title>
+<style>
+:root{
+  --navy:#1e3a5f;
+  --navy-dark:#152b47;
+  --slate:#3d5a80;
+  --amber:#e8a33d;
+  --amber-dark:#c9822a;
+  --paper:#f7f5f0;
+  --paper-2:#eeebe3;
+  --ink:#26313f;
+  --ink-soft:#5a6a7a;
+  --line:#d8d2c4;
+  --ok:#2f7a4f;
+  --ok-bg:#e5f3ea;
+  --bad:#b5432f;
+  --bad-bg:#fbe9e6;
+  --white:#ffffff;
+  --radius:10px;
+  --sidebar-w:280px;
+  --header-h:64px;
+  font-size:16px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;height:100%;}
+body{
+  font-family:"Segoe UI",Verdana,Tahoma,sans-serif;
+  background:var(--paper-2);
+  color:var(--ink);
+  overflow:hidden;
+}
+button{font-family:inherit;cursor:pointer;}
+input,textarea,select{font-family:inherit;}
+::selection{background:var(--amber);color:var(--navy-dark);}
+
+/* ---------- App shell ---------- */
+#app{
+  display:flex;
+  flex-direction:column;
+  height:100vh;
+}
+
+/* ---------- Header ---------- */
+#header{
+  height:var(--header-h);
+  flex:0 0 auto;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);
+  color:var(--white);
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:0 16px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  z-index:20;
+}
+#hamburger{
+  flex:0 0 auto;
+  width:40px;height:40px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(255,255,255,.08);
+  color:var(--white);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+}
+#hamburger:active{background:rgba(255,255,255,.2);}
+#header-text{flex:1 1 auto;min-width:0;}
+#header-text h1{
+  font-size:15px;
+  margin:0;
+  font-weight:700;
+  letter-spacing:.2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#header-text p{
+  margin:2px 0 0;
+  font-size:11.5px;
+  color:#c7d3e0;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+#header-progress{
+  flex:0 0 auto;
+  text-align:right;
+  font-size:12px;
+  color:#e8ecf1;
+}
+#header-progress b{color:var(--amber);font-size:15px;}
+#header-progress-bar{
+  width:90px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,.2);
+  margin-top:5px;overflow:hidden;
+}
+#header-progress-fill{height:100%;background:var(--amber);width:0%;transition:width .3s;}
+
+/* ---------- Body layout ---------- */
+#body-wrap{
+  flex:1 1 auto;
+  display:flex;
+  min-height:0;
+  position:relative;
+}
+
+/* ---------- Sidebar ---------- */
+#sidebar{
+  width:var(--sidebar-w);
+  flex:0 0 var(--sidebar-w);
+  background:var(--white);
+  border-right:1px solid var(--line);
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  transition:margin-left .25s ease, box-shadow .25s ease;
+  z-index:15;
+}
+#body-wrap.sidebar-hidden #sidebar{margin-left:calc(-1 * var(--sidebar-w));}
+#sidebar-inner{
+  flex:1 1 auto;
+  overflow-y:auto;
+  padding:14px;
+}
+.legend{
+  display:flex;flex-wrap:wrap;gap:6px 10px;
+  font-size:10.5px;color:var(--ink-soft);
+  margin-bottom:12px;padding-bottom:12px;
+  border-bottom:1px dashed var(--line);
+}
+.legend span{display:flex;align-items:center;gap:4px;}
+.legend i{width:9px;height:9px;border-radius:3px;display:inline-block;}
+.sec-title{
+  font-size:11px;font-weight:700;color:var(--slate);
+  text-transform:uppercase;letter-spacing:.6px;
+  margin:14px 0 6px;
+}
+.sec-title:first-child{margin-top:0;}
+#navgrid-group{display:flex;flex-direction:column;gap:2px;}
+.nav-section{margin-bottom:4px;}
+.nav-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+}
+.nav-btn{
+  aspect-ratio:1/1;
+  border-radius:7px;
+  border:1.5px solid var(--line);
+  background:var(--paper);
+  color:var(--ink);
+  font-size:12.5px;
+  font-weight:600;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  transition:.15s;
+}
+.nav-btn.answered{background:#dfeadd;border-color:#a9cba3;color:#2f5c3a;}
+.nav-btn.checked-correct{background:var(--ok-bg);border-color:var(--ok);color:var(--ok);}
+.nav-btn.checked-wrong{background:var(--bad-bg);border-color:var(--bad);color:var(--bad);}
+.nav-btn.current{
+  border-color:var(--amber);
+  box-shadow:0 0 0 2px rgba(232,163,61,.35);
+  background:var(--navy);
+  color:var(--white);
+}
+.nav-btn:active{transform:scale(.93);}
+
+/* ---------- Backdrop for mobile sidebar ---------- */
+#backdrop{
+  display:none;
+  position:fixed;inset:0;
+  background:rgba(20,25,35,.4);
+  z-index:14;
+}
+#body-wrap.mobile-open #backdrop{display:block;}
+
+/* ---------- Main panel ---------- */
+#main{
+  flex:1 1 auto;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+}
+#main-scroll{
+  flex:1 1 auto;
+  overflow-y:auto;
+  padding:22px clamp(16px,4vw,48px) 100px;
+}
+.card{
+  max-width:820px;
+  margin:0 auto;
+  background:var(--white);
+  border-radius:14px;
+  border:1px solid var(--line);
+  box-shadow:0 1px 3px rgba(30,58,95,.06);
+  padding:24px clamp(16px,3vw,36px);
+}
+.q-meta{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin-bottom:14px;
+}
+.q-badge{
+  font-size:11px;font-weight:700;letter-spacing:.4px;
+  padding:4px 10px;border-radius:20px;
+  background:var(--navy);color:var(--white);
+}
+.q-badge.MCMA{background:var(--slate);}
+.q-badge.MATCH{background:#6b5b95;}
+.q-badge.ISIAN{background:#3d7068;}
+.q-badge.ESSAY{background:var(--amber-dark);}
+.q-num{font-size:13px;color:var(--ink-soft);font-weight:600;}
+.q-level{
+  margin-left:auto;font-size:11px;color:var(--ink-soft);
+  background:var(--paper);border:1px solid var(--line);
+  padding:3px 8px;border-radius:6px;
+}
+.q-stimulus{
+  background:var(--paper);border:1px solid var(--line);
+  border-left:4px solid var(--slate);
+  border-radius:8px;padding:12px 14px;margin-bottom:14px;
+  font-size:14.5px;line-height:1.7;color:var(--ink);
+}
+.q-stimulus table{border-collapse:collapse;margin-top:8px;width:100%;}
+.q-stimulus table td,.q-stimulus table th{
+  border:1px solid var(--line);padding:5px 9px;font-size:13.5px;text-align:center;
+}
+.q-stimulus table th{background:#e4e0d3;}
+.q-text{
+  font-size:16.5px;line-height:1.85;margin-bottom:20px;color:var(--ink);
+}
+.q-text p{margin:0 0 10px;}
+
+/* fraction rendering */
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 2px;line-height:1;position:relative;top:2px;}
+.frac .num{padding:0 3px 2px;border-bottom:1.4px solid currentColor;}
+.frac .den{padding:2px 3px 0;}
+.eq-block{display:block;text-align:center;margin:10px 0;font-size:1.05em;}
+.mathtext{font-style:italic;}
+
+/* options: MCQ / MCMA */
+.opt-list{display:flex;flex-direction:column;gap:9px;}
+.opt{
+  display:flex;align-items:flex-start;gap:11px;
+  border:1.5px solid var(--line);border-radius:10px;
+  padding:12px 14px;
+  background:var(--paper);
+  transition:.15s;
+}
+.opt:not(.locked):active{background:var(--paper-2);}
+.opt.selected{border-color:var(--navy);background:#eaf0f8;}
+.opt.correct-mark{border-color:var(--ok);background:var(--ok-bg);}
+.opt.wrong-mark{border-color:var(--bad);background:var(--bad-bg);}
+.opt input{margin-top:3px;flex:0 0 auto;width:18px;height:18px;accent-color:var(--navy);}
+.opt-label{font-weight:700;color:var(--slate);flex:0 0 auto;width:18px;}
+.opt-text{flex:1 1 auto;font-size:15px;line-height:1.6;}
+.opt-icon{flex:0 0 auto;font-size:15px;font-weight:700;}
+
+/* Match */
+.match-wrap{display:flex;flex-direction:column;gap:12px;}
+.match-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  border:1.5px solid var(--line);border-radius:10px;padding:12px;background:var(--paper);
+}
+.match-left{font-weight:600;font-size:15px;flex:1 1 160px;min-width:120px;}
+.match-select{
+  flex:1 1 160px;min-width:140px;
+  padding:9px 10px;border-radius:8px;border:1.5px solid var(--line);
+  background:var(--white);font-size:14.5px;color:var(--ink);
+}
+.match-row.correct-mark{border-color:var(--ok);background:var(--ok-bg);}
+.match-row.wrong-mark{border-color:var(--bad);background:var(--bad-bg);}
+.match-icon{flex:0 0 auto;font-weight:700;}
+
+/* Isian */
+.isian-input{
+  width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);
+  font-size:16px;background:var(--paper);color:var(--ink);
+}
+.isian-input:focus{outline:none;border-color:var(--navy);background:var(--white);}
+.isian-hint{font-size:11.5px;color:var(--ink-soft);margin-top:6px;}
+
+/* Essay */
+.essay-input{
+  width:100%;min-height:130px;padding:12px 14px;border-radius:10px;
+  border:1.5px solid var(--line);font-size:15.5px;line-height:1.6;
+  background:var(--paper);color:var(--ink);resize:vertical;
+}
+.essay-input:focus{outline:none;border-color:var(--navy);background:var(--white);}
+
+/* Locked state */
+.locked{pointer-events:none;opacity:.92;}
+
+/* Action row */
+.q-actions{
+  display:flex;gap:10px;flex-wrap:wrap;
+  margin-top:18px;padding-top:16px;border-top:1px solid var(--line);
+}
+.btn{
+  border:none;border-radius:9px;padding:11px 18px;font-size:14px;font-weight:700;
+  display:inline-flex;align-items:center;gap:7px;
+}
+.btn-primary{background:var(--navy);color:var(--white);}
+.btn-primary:active{background:var(--navy-dark);}
+.btn-primary:disabled{background:#b9c2cd;color:#eef1f4;}
+.btn-ghost{background:var(--white);color:var(--navy);border:1.5px solid var(--navy);}
+.btn-amber{background:var(--amber);color:var(--navy-dark);}
+.btn-amber:active{background:var(--amber-dark);}
+.btn:disabled{cursor:not-allowed;}
+
+/* Feedback / pembahasan */
+.feedback{
+  margin-top:16px;border-radius:10px;padding:14px 16px;font-size:14.5px;line-height:1.75;
+}
+.feedback.ok{background:var(--ok-bg);border:1.5px solid #b6dcc2;color:#204a30;}
+.feedback.bad{background:var(--bad-bg);border:1.5px solid #eec3ba;color:#7a2e20;}
+.feedback.neutral{background:#eef2f6;border:1.5px solid #c9d6e3;color:var(--navy-dark);}
+.feedback-title{font-weight:700;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+.feedback .kunci{font-weight:700;}
+.pembahasan{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(0,0,0,.15);}
+.pembahasan-step{margin-bottom:7px;}
+.pembahasan-step b{color:var(--slate);}
+.rubrik-box{
+  margin-top:10px;background:var(--white);border:1px dashed var(--line);
+  border-radius:8px;padding:10px 12px;font-size:13.5px;color:var(--ink-soft);
+}
+
+/* Footer nav bar (prev/next) */
+#footer-nav{
+  flex:0 0 auto;
+  display:flex;gap:10px;align-items:center;
+  padding:12px clamp(16px,4vw,48px);
+  background:var(--white);
+  border-top:1px solid var(--line);
+}
+#footer-nav .spacer{flex:1 1 auto;}
+#btn-finish{background:var(--ok);color:var(--white);}
+
+/* ---------- Result modal ---------- */
+#result-overlay{
+  position:fixed;inset:0;background:rgba(20,25,35,.55);
+  display:none;align-items:center;justify-content:center;z-index:50;padding:16px;
+}
+#result-overlay.show{display:flex;}
+#result-modal{
+  background:var(--white);border-radius:16px;max-width:640px;width:100%;
+  max-height:88vh;overflow-y:auto;padding:26px clamp(18px,4vw,34px);
+}
+#result-modal h2{margin:0 0 4px;font-size:20px;color:var(--navy);}
+#result-modal .sub{color:var(--ink-soft);font-size:13px;margin-bottom:18px;}
+.score-hero{
+  display:flex;align-items:center;gap:18px;
+  background:linear-gradient(135deg,var(--navy),var(--slate));
+  color:var(--white);border-radius:12px;padding:18px 20px;margin-bottom:18px;
+}
+.score-hero .num{font-size:42px;font-weight:800;color:var(--amber);line-height:1;}
+.score-hero .lbl{font-size:12.5px;color:#dbe4ee;line-height:1.5;}
+.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.result-item{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:var(--paper);}
+.result-item .n{font-size:18px;font-weight:800;color:var(--navy);}
+.result-item .l{font-size:11.5px;color:var(--ink-soft);}
+.result-note{
+  background:#fff6e8;border:1px solid #f0dcae;border-radius:9px;
+  padding:11px 13px;font-size:12.5px;color:#7a5a12;line-height:1.6;margin-bottom:14px;
+}
+.result-actions{display:flex;gap:10px;flex-wrap:wrap;}
+#level-breakdown{margin-bottom:14px;}
+.level-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:12.5px;}
+.level-row .lname{flex:0 0 128px;color:var(--ink-soft);}
+.level-bar-bg{flex:1 1 auto;height:8px;border-radius:5px;background:var(--paper-2);overflow:hidden;}
+.level-bar-fill{height:100%;background:var(--slate);}
+.level-row .lval{flex:0 0 44px;text-align:right;font-weight:700;color:var(--navy);}
+
+/* ---------- Start screen (nama siswa) ---------- */
+#start-overlay{
+  position:fixed;inset:0;z-index:70;
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-dark) 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#start-overlay.hidden{display:none;}
+#start-card{
+  background:var(--white);border-radius:16px;max-width:420px;width:100%;
+  padding:30px clamp(20px,5vw,36px);text-align:center;
+  box-shadow:0 20px 50px rgba(0,0,0,.3);
+}
+#start-card .eyebrow{
+  font-size:12px;color:var(--slate);font-weight:700;margin-bottom:6px;
+}
+#start-card h2{margin:0 0 6px;font-size:19px;color:var(--navy);}
+#start-card .sub{font-size:13px;color:var(--ink-soft);margin-bottom:22px;line-height:1.6;}
+#start-card label{
+  display:block;text-align:left;font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px;
+}
+#input-nama{
+  width:100%;padding:12px 14px;border-radius:10px;border:1.5px solid var(--line);
+  font-size:16px;background:var(--paper);color:var(--ink);margin-bottom:6px;
+}
+#input-nama:focus{outline:none;border-color:var(--navy);background:var(--white);}
+#start-card .err{font-size:12px;color:var(--bad);text-align:left;min-height:16px;margin-bottom:10px;}
+#btn-mulai{width:100%;justify-content:center;padding:13px;font-size:15px;}
+#btn-mulai:disabled{background:#b9c2cd;color:#eef1f4;}
+.hdr-student{
+  font-size:11.5px;color:#c7d3e0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+
+/* Confirm dialog (reset) */
+.confirm-overlay{
+  position:fixed;inset:0;background:rgba(20,25,35,.5);
+  display:none;align-items:center;justify-content:center;z-index:60;padding:16px;
+}
+.confirm-overlay.show{display:flex;}
+.confirm-box{background:var(--white);border-radius:14px;padding:20px;max-width:360px;width:100%;}
+.confirm-box p{font-size:14px;color:var(--ink);line-height:1.6;}
+.confirm-box .row{display:flex;gap:10px;margin-top:14px;}
+
+/* Empty/utility */
+.hidden{display:none !important;}
+
+/* ---------- Responsive ---------- */
+@media (max-width:860px){
+  :root{--sidebar-w:250px;}
+  #header-text p{display:none;}
+}
+@media (max-width:680px){
+  #sidebar{
+    position:fixed;top:var(--header-h);bottom:0;left:0;
+    box-shadow:6px 0 24px rgba(0,0,0,.18);
+  }
+  #body-wrap.sidebar-hidden #sidebar{margin-left:calc(-1 * var(--sidebar-w));}
+  .result-grid{grid-template-columns:1fr 1fr;}
+  .card{padding:18px 16px;}
+  #header-progress-bar{width:60px;}
+}
+@media (max-width:400px){
+  .nav-grid{grid-template-columns:repeat(5,1fr);}
+}
+
+/* Scrollbar polish */
+#sidebar-inner::-webkit-scrollbar,#main-scroll::-webkit-scrollbar,#result-modal::-webkit-scrollbar{width:8px;}
+#sidebar-inner::-webkit-scrollbar-thumb,#main-scroll::-webkit-scrollbar-thumb{background:#c9c2b0;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<div id="start-overlay">
+  <div id="start-card">
+    <div class="eyebrow">SEBELUM MULAI</div>
+    <h2 id="start-title">Asesmen Sumatif Tengah Semester</h2>
+    <div class="sub" id="start-sub">Isi nama lengkapmu terlebih dahulu sebelum mengerjakan soal.</div>
+    <label for="input-nama">Nama Siswa</label>
+    <input type="text" id="input-nama" placeholder="Tulis nama lengkapmu di sini" autocomplete="name">
+    <div class="err" id="start-err"></div>
+    <button class="btn btn-primary" id="btn-mulai" disabled>Mulai Mengerjakan</button>
+  </div>
+</div>
+
+<div id="app">
+  <div id="header">
+    <button id="hamburger" title="Tampilkan/Sembunyikan navigasi soal">☰</button>
+    <div id="header-text">
+      <h1 id="hdr-title">Memuat…</h1>
+      <p id="hdr-sub"></p>
+      <p class="hdr-student" id="hdr-student"></p>
+    </div>
+    <div id="header-progress">
+      <div><b id="hdr-answered">0</b>/<span id="hdr-total">30</span> terjawab</div>
+      <div id="header-progress-bar"><div id="header-progress-fill"></div></div>
+    </div>
+  </div>
+
+  <div id="body-wrap">
+    <div id="backdrop"></div>
+    <div id="sidebar">
+      <div id="sidebar-inner">
+        <div class="legend">
+          <span><i style="background:var(--paper);border:1.5px solid var(--line);"></i>Belum dijawab</span>
+          <span><i style="background:#dfeadd;border:1.5px solid #a9cba3;"></i>Terisi</span>
+          <span><i style="background:var(--ok-bg);border:1.5px solid var(--ok);"></i>Benar</span>
+          <span><i style="background:var(--bad-bg);border:1.5px solid var(--bad);"></i>Salah</span>
+        </div>
+        <div id="navgrid-group"></div>
+      </div>
+    </div>
+
+    <div id="main">
+      <div id="main-scroll">
+        <div class="card" id="question-card"></div>
+      </div>
+      <div id="footer-nav">
+        <button class="btn btn-ghost" id="btn-prev">← Sebelumnya</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" id="btn-next">Berikutnya →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="result-overlay">
+  <div id="result-modal"></div>
+</div>
+
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <p id="confirm-text"></p>
+    <div class="row">
+      <button class="btn btn-ghost" id="confirm-cancel" style="flex:1;">Batal</button>
+      <button class="btn btn-primary" id="confirm-ok" style="flex:1;background:var(--bad);">Ya, lanjutkan</button>
+    </div>
+  </div>
+</div>
+
+<script id="soal-data" type="application/json">[{"nomor": 1, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C3", "indikator": "Disajikan ilustrasi tanggap impuls saat menyentuh benda panas, peserta didik dapat menentukan urutan jalan impuls pada gerak refleks", "pertanyaan": "Seorang siswa tanpa sengaja menyentuh permukaan panci yang sangat panas saat membantu ibunya di dapur. Secara spontan dan seketika, tangannya ditarik kembali sebelum ia menyadari rasa sakitnya. Urutan jalan impuls saraf yang tepat pada gerak refleks tersebut adalah...", "pilihan_jawaban": {"A": "Reseptor (kulit) -> Saraf sensorik -> Sumsum tulang belakang -> Saraf motorik -> Efektor (otot)", "B": "Reseptor (kulit) -> Saraf motorik -> Otak besar -> Saraf sensorik -> Efektor (otot)", "C": "Reseptor (kulit) -> Saraf sensorik -> Otak besar -> Saraf motorik -> Efektor (otot)", "D": "Reseptor (kulit) -> Saraf motorik -> Sumsum tulang belakang -> Saraf sensorik -> Efektor (otot)"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Gerak refleks adalah gerak cepat otomatis tanpa disadari untuk melindungi tubuh dari bahaya. Jalur refleks tidak melintasi otak besar, melainkan diproses cepat di sumsum tulang belakang. Urutannya: Penerima Rangsang (Reseptor/Kulit) -> Kurir Pembawa Sinyal (Saraf Sensorik) -> Pusat Refleks (Sumsum Tulang Belakang) -> Kurir Perintah (Saraf Motorik) -> Pelaksana Gerak (Efektor/Otot)."}}, {"nomor": 2, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengidentifikasi jenis sel saraf yang menghantarkan impuls dari reseptor ke sistem saraf pusat", "pertanyaan": "Ketika kulit seseorang merasakan gigitan nyamuk, rangsangan tersebut diterima oleh reseptor kulit dan diteruskan menuju ke sistem saraf pusat (otak atau sumsum tulang belakang). Jenis sel saraf yang berfungsi menghantarkan impuls rangsangan dari reseptor menuju ke sistem saraf pusat adalah...", "pilihan_jawaban": {"A": "Sel saraf motorik (eferen)", "B": "Sel saraf sensorik (aferen)", "C": "Sel saraf konektor (interneuron)", "D": "Sel saraf sekretorik"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Sel saraf sensorik (aferen) bertugas sebagai 'kurir penerima' yang membawa rangsangan dari alat indera/reseptor menuju sistem saraf pusat. Sementara sel saraf motorik bertugas membawa perintah dari sistem saraf pusat menuju otot/efektor."}}, {"nomor": 3, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C2", "indikator": "Peserta didik dapat menentukan pengaruh kerja sistem saraf simpatik pada tubuh saat kondisi darurat", "pertanyaan": "Saat seseorang tiba-tiba terkejut karena dikejar anjing galak, sistem saraf otonom akan aktif untuk menyiapkan tubuh dalam kondisi darurat atau terancam. Salah satu respon fisiologis yang dipicu oleh kerja sistem saraf simpatik dalam kondisi tersebut adalah...", "pilihan_jawaban": {"A": "Memperlambat denyut jantung dan menyempitkan pupil mata", "B": "Mempercepat denyut jantung dan memperlebar pupil mata", "C": "Merangsang proses pencernaan pada lambung dan usus", "D": "Menyempitkan pembuluh darah menuju otot rangka"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Saraf simpatik bekerja saat kondisi kaget, takut, atau darurat (fight or flight). Saraf ini memacu organ tubuh agar siap siaga, seperti mempercepat detak jantung untuk memompa darah lebih banyak dan memperlebar pupil mata agar penglihatan lebih tajam."}}, {"nomor": 4, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C3", "indikator": "Disajikan narasi respon tubuh saat kaget, peserta didik dapat menentukan kelenjar penghasil hormon respon darurat tersebut", "pertanyaan": "Mendengar suara ledakan petasan yang sangat keras di dekatnya, Budi sangat terkejut hingga jantungnya berdebar kencang, napasnya memburu, dan staminanya meningkat seketika. Respon fisiologis darurat ini dipicu oleh hormon adrenalin. Kelenjar endokrin yang memproduksi hormon tersebut adalah...", "pilihan_jawaban": {"A": "Kelenjar tiroid", "B": "Kelenjar pankreas", "C": "Kelenjar adrenal (anak ginjal)", "D": "Kelenjar hipofisis"}, "kunci_jawaban": "C", "pembahasan_step_by_step": {"pembahasan": "Saat kaget atau panik, kelenjar adrenal (terletak di atas ginjal) menyekresikan hormon adrenalin ke dalam darah. Hormon ini meningkatkan detak jantung, tekanan darah, dan aliran gula darah untuk memberikan pasokan energi darurat bagi tubuh."}}, {"nomor": 5, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C2", "indikator": "Peserta didik dapat menjelaskan definisi/konsep homeostasis pada tubuh manusia", "pertanyaan": "Pernyataan berikut yang paling tepat menjelaskan definisi dari konsep homeostasis pada tubuh manusia adalah...", "pilihan_jawaban": {"A": "Kemampuan tubuh untuk menyesuaikan struktur organ secara permanen akibat perubahan musim", "B": "Mekanisme otomatis tubuh untuk mempertahankan kondisi internal yang konstan dan stabil agar sel-sel berfungsi normal", "C": "Proses pembelahan sel secara terus-menerus untuk mempercepat pertumbuhan tinggi badan", "D": "Tindakan sadar manusia dalam memilih jenis makanan dan minuman bernutrisi tinggi"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Homeostasis berasal dari kata 'homeo' (sama/stabil) dan 'stasis' (keadaan tetap). Homeostasis adalah usaha otomatis tubuh untuk menjaga kestabilan kondisi dalam (seperti suhu tubuh, kadar air, dan gula darah) agar tetap berada di batas normal meskipun kondisi lingkungan luar berubah-ubah."}}, {"nomor": 6, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C2", "indikator": "Peserta didik dapat menentukan zat/ion dan vitamin yang membantu proses pengubahan protrombin menjadi trombin", "pertanyaan": "Pada proses pembekuan darah saat terjadi luka, enzim trombokinase akan mengatalisis pengubahan protrombin menjadi trombin aktif. Proses pengubahan protrombin menjadi trombin tersebut sangat membutuhkan bantuan dari...", "pilihan_jawaban": {"A": "Ion Kalsium (Ca2+) dan Vitamin K", "B": "Ion Besi (Fe2+) dan Vitamin C", "C": "Ion Natrium (Na+) dan Vitamin A", "D": "Ion Kalium (K+) dan Vitamin D"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Protrombin adalah protein plasma darah yang dibuat di hati dengan bantuan Vitamin K. Ketika terjadi luka, protrombin diubah menjadi enzim aktif trombin dengan bantuan penting dari Ion Kalsium (Ca2+) dan Vitamin K. Trombin inilah yang mengonversi fibrinogen menjadi jaring-jaring fibrin penutup luka."}}, {"nomor": 7, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengidentifikasi hewan yang memiliki sel elektroplak (dalam jumlah tertentu) untuk pertahanan diri", "pertanyaan": "Beberapa jenis hewan memiliki keistimewaan berupa sel-sel otot terspesialisasi yang dinamakan sel elektroplak. Sel-sel ini dapat menghasilkan kejutan listrik yang kuat untuk melumpuhkan mangsa maupun mempertahankan diri dari musuh. Pasangan hewan yang memiliki sel elektroplak tersebut adalah...", "pilihan_jawaban": {"A": "Belut listrik dan Hiu kepala martil", "B": "Ikan mas dan Ikan lele lokal", "C": "Paus biru dan Lumba-lumba", "D": "Katak pohon dan Salamander"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Hewan penghasil listrik seperti belut listrik, ikan pari listrik, dan hiu kepala martil memiliki organ listrik yang tersusun dari ribuan sel khusus yang disebut elektroplak. Saat terancam, sel elektroplak melepaskan muatan listrik secara serentak untuk pertahanan diri."}}, {"nomor": 8, "tipe_soal": "MCQ", "elemen": "Homeostasis", "level_kognitif": "C2", "indikator": "Peserta didik dapat menentukan komponen darah yang pertama kali pecah saat terjadi luka dan mengeluarkan enzim trombokinase", "pertanyaan": "Saat kulit tergores atau luka, komponen darah yang pertama kali pecah ketika tersentuh permukaan kasar dan menyemburkan enzim trombokinase (tromboplastin) untuk memulai pembekuan darah adalah...", "pilihan_jawaban": {"A": "Eritrosit (Sel darah merah)", "B": "Leukosit (Sel darah putih)", "C": "Trombosit (Keping darah)", "D": "Albumin"}, "kunci_jawaban": "C", "pembahasan_step_by_step": {"pembahasan": "Trombosit (keping darah) berukuran sangat kecil dan rapuh. Ketika terjadi luka, trombosit menyentuh permukaan jaringan yang kasar lalu pecah dan mengeluarkan enzim trombokinase untuk memicu pembekuan darah."}}, {"nomor": 9, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Rokok", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengidentifikasi gas beracun hasil pembakaran rokok yang dapat mengikat hemoglobin", "pertanyaan": "Asap rokok mengandung berbagai zat berbahaya. Salah satu gas beracun tanpa warna dan bau hasil pembakaran tidak sempurna tembakau yang memiliki daya ikat terhadap hemoglobin jauh lebih kuat dibandingkan oksigen adalah...", "pilihan_jawaban": {"A": "Karbon dioksida (CO2)", "B": "Karbon monoksida (CO)", "C": "Sulfur dioksida (SO2)", "D": "Methane (CH4)"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Gas Karbon Monoksida (CO) hasil pembakaran rokok mengikat hemoglobin darah 200 kali lebih kuat dibanding oksigen. Akibatnya, sel darah merah membawa CO alih-alih oksigen, sehingga pasokan oksigen ke otak dan organ tubuh berkurang drastis."}}, {"nomor": 10, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Alkohol", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengelompokkan minuman keras berdasarkan kadar alkoholnya", "pertanyaan": "Minuman keras dikelompokkan berdasarkan kadar etanol di dalamnya. Minuman beralkohol Golongan B adalah jenis minuman yang mengandung kadar etanol sebesar...", "pilihan_jawaban": {"A": "1% sampai 5%", "B": "5% sampai 20%", "C": "20% sampai 55%", "D": "Lebih dari 55%"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Penggolongan minuman beralkohol: Golongan A (kadar etanol 1% - 5%, contoh: bir), Golongan B (kadar etanol 5% - 20%, contoh: anggur/wine), dan Golongan C (kadar etanol 20% - 55%, contoh: whisky, vodka, brandy)."}}, {"nomor": 11, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Psikotropika", "level_kognitif": "C3", "indikator": "Disajikan beberapa contoh zat adiktif, peserta didik dapat mengidentifikasi zat yang tergolong Psikotropika Golongan I", "pertanyaan": "Perhatikan beberapa jenis zat adiktif berikut:\n(1) Ekstasi (MDMA)\n(2) Diazepam\n(3) LSD (Lysergic Acid Diethylamide)\n(4) Amfetamin\nZat psikoaktif yang dikelompokkan ke dalam Psikotropika Golongan I karena memiliki potensi ketergantungan sangat kuat dan dilarang digunakan dalam terapi medis biasa adalah...", "pilihan_jawaban": {"A": "(1) dan (3)", "B": "(1) dan (2)", "C": "(2) dan (4)", "D": "(3) dan (4)"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Psikotropika Golongan I memicu adiksi sangat kuat dan tidak digunakan dalam pengobatan medis biasa (hanya untuk sains/penelitian). Contoh utamanya adalah Ekstasi (MDMA), LSD, dan STP. Sementara Diazepam tergolong Golongan IV dan Amfetamin Golongan II/III."}}, {"nomor": 12, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Vape", "level_kognitif": "C4", "indikator": "Peserta didik dapat menganalisis kebenaran/menganalisis dampak negatif penggunaan rokok elektrik (vape) bagi kesehatan", "pertanyaan": "Sebagian remaja beranggapan bahwa rokok elektrik (vape) aman bagi kesehatan karena tidak menghasilkan asap tembakau. Berdasarkan analisis medis biologi, anggapan tersebut keliru karena cairan (liquid) vape tetap berdampak buruk bagi kesehatan karena mengandung...", "pilihan_jawaban": {"A": "Tar padat yang menutupi permukaan usus halus", "B": "Nikotin yang memicu ketergantungan serta bahan pelarut organik yang saat dipanaskan menghasilkan uap toksik pemicu iritasi dan kerusakan saluran pernapasan", "C": "Gas karbondioksida tinggi yang membekukan darah di saluran uretra", "D": "Bakteri patogen yang langsung merusak sel saraf mata"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Meskipun tidak membakar tembakau, uap vape tetap mengandung Nikotin yang menyebabkan ketergantungan tinggi dan penyempitan pembuluh darah. Selain itu, pelarut gliserol/propilen glikol saat dipanaskan menghasilkan senyawa beracun yang merusak jaringan paru-paru."}}, {"nomor": 13, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Narkoba", "level_kognitif": "C2", "indikator": "Peserta didik dapat menentukan tahapan kuratif penanganan pecandu narkoba untuk mengeliminasi racun dalam tubuh", "pertanyaan": "Pada proses rehabilitasi medis pecandu narkoba, tahapan kuratif awal di bawah pengawasan dokter yang bertujuan untuk membuang dan membersihkan sisa-sisa racun zat adiktif dari dalam tubuh dinamakan...", "pilihan_jawaban": {"A": "Tahap rehabilitasi sosial", "B": "Tahap detoksifikasi", "C": "Tahap resosialisasi", "D": "Tahap operasional"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Detoksifikasi berasal dari kata 'de' (menghilangkan) dan 'toxin' (racun). Detoksifikasi adalah langkah medis awal untuk membersihkan racun sisa narkoba dari dalam darah dan organ tubuh pecandu."}}, {"nomor": 14, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Narkotika", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengidentifikasi penggolongan narkotika berdasarkan tingkat potensi ketergantungan dan pemanfaatan medis", "pertanyaan": "Berdasarkan UU No. 35 Tahun 2009, Narkotika Golongan I ditandai dengan karakteristik utama yaitu...", "pilihan_jawaban": {"A": "Berpotensi sangat tinggi menyebabkan ketergantungan dan dilarang digunakan untuk terapi medis biasa (hanya untuk pengembangan ilmu pengetahuan)", "B": "Berpotensi sedang menyebabkan ketergantungan dan menjadi obat utama dalam terapi pengobatan ringan", "C": "Berpotensi ringan menyebabkan ketergantungan dan dijual bebas tanpa resep dokter", "D": "Tidak menyebabkan ketergantungan dan dapat dijadikan zat aditif makanan"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Narkotika Golongan I (seperti ganja, heroin, kokain, opium) memiliki daya kecanduan paling tinggi dan dilarang keras dipakai dalam pelayanan pengobatan medis umum."}}, {"nomor": 15, "tipe_soal": "MCQ", "elemen": "Zat Adiktif / Rokok", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengidentifikasi residu padat pembakaran tembakau yang bersifat karsinogenik", "pertanyaan": "Komponen asap rokok berupa residu partikel padat berwarna cokelat lengket yang mengendap pada saluran pernapasan dan bersifat karsinogenik (pemicu timbulnya kanker) adalah...", "pilihan_jawaban": {"A": "Nikotin", "B": "Tar", "C": "Kafein", "D": "Karbon monoksida"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Tar adalah kumpulan komponen zat padat lengket berwarna cokelat hasil pembakaran tembakau. Tar mengendap di silia dan alveolus paru-paru serta merusak DNA sel sehingga memicu mutasi kanker (karsinogenik)."}}, {"nomor": 16, "tipe_soal": "MCQ", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C3", "indikator": "Disajikan gambar organ reproduksi pria, peserta didik dapat mengidentifikasi bagian organ berdasarkan nomor yang ditunjuk", "pertanyaan": "Perhatikan diagram saluran reproduksi pria berikut!\n(1) Testis\n(2) Epididimis\n(3) Vas Deferens\n(4) Uretra\nPasangan nomor dan nama organ reproduksi pria yang berfungsi sebagai tempat pematangan dan penyimpanan sementara sel sperma hingga fungsional ditunjukkan oleh nomor...", "pilihan_jawaban": {"A": "(1) Testis", "B": "(2) Epididimis", "C": "(3) Vas Deferens", "D": "(4) Uretra"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Fungsi saluran reproduksi pria: Testis (1) = tempat pembuatan sperma, Epididimis (2) = tempat pematangan dan penyimpanan sementara sperma, Vas Deferens (3) = saluran sperma menuju uretra, Uretra (4) = saluran pembuangan akhir semen dan urine."}}, {"nomor": 17, "tipe_soal": "MCQ", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C2", "indikator": "Peserta didik dapat menentukan organ reproduksi pria yang berfungsi mengatur suhu testis/sperma", "pertanyaan": "Organ reproduksi luar pada pria berupa kantung kulit berdaging yang membungkus testis serta berfungsi mengatur suhu testis agar sekitar 1-2 °C di bawah suhu tubuh demi kelangsungan spermatogenesis adalah...", "pilihan_jawaban": {"A": "Skrotum", "B": "Epididimis", "C": "Vesikula Seminalis", "D": "Penis"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Skrotum adalah kantung pembungkus testis. Skrotum dapat mengendur atau mengkerut secara otomatis untuk menjaga suhu testis tetap ideal (lebih dingin dari suhu tubuh) bagi pembentukan sperma."}}, {"nomor": 18, "tipe_soal": "MCQ", "elemen": "Perkembangbiakan Tumbuhan", "level_kognitif": "C3", "indikator": "Disajikan gambar penyerbukan, peserta didik dapat menentukan nomor yang menunjukkan penyerbukan yang benar", "pertanyaan": "Perhatikan gambar diagram asal serbuk sari pada peristiwa penyerbukan berikut!\n(1) Serbuk sari jatuh ke kepala putik bunga itu sendiri.\n(2) Serbuk sari jatuh ke kepala putik bunga lain pada satu pohon yang sama.\n(3) Serbuk sari jatuh ke kepala putik bunga pada pohon lain yang masih sejenis.\n(4) Serbuk sari jatuh ke kepala putik bunga pada pohon lain yang berbeda varietas.\nNomor yang menunjukkan peristiwa penyerbukan silang (Alogami/Xenogami) ditunjukkan oleh nomor...", "pilihan_jawaban": {"A": "(1)", "B": "(2)", "C": "(3)", "D": "(4)"}, "kunci_jawaban": "C", "pembahasan_step_by_step": {"pembahasan": "Jenis penyerbukan berdasarkan asal serbuk sari: (1) Penyerbukan Sendiri (Autogami), (2) Penyerbukan Tetangga (Geitonogami), (3) Penyerbukan Silang (Alogami/Xenogami - dari pohon lain sejenis), (4) Penyerbukan Bastar (beda varietas)."}}, {"nomor": 19, "tipe_soal": "MCQ", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C1", "indikator": "Peserta didik dapat menyebutkan istilah proses pembentukan sel kelamin betina (ovum)", "pertanyaan": "Istilah biologis yang tepat untuk mendeskripsikan seluruh tahapan proses pembentukan sel kelamin betina (sel telur/ovum) di dalam ovarium adalah...", "pilihan_jawaban": {"A": "Spermatogenesis", "B": "Oogenesis", "C": "Organogenesis", "D": "Partenogenesis"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Proses pembuatan sperma pada pria dinamakan spermatogenesis, sedangkan proses pembuatan sel telur (ovum) pada wanita di dalam ovarium dinamakan oogenesis."}}, {"nomor": 20, "tipe_soal": "MCQ", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C3", "indikator": "Disajikan gambar organ reproduksi wanita, peserta didik dapat menentukan bagian yang ditunjuk", "pertanyaan": "Perhatikan gambar diagram organ reproduksi perempuan berikut!\n(A) Ovarium\n(B) Tuba Fallopii (Oviduk)\n(C) Uterus (Rahim)\n(D) Vagina\nBagian yang ditunjuk oleh huruf B merupakan saluran tempat berlangsungnya peristiwa fertilisasi (pembuahan sel telur oleh sperma), yaitu...", "pilihan_jawaban": {"A": "Ovarium", "B": "Tuba Fallopii (Oviduk)", "C": "Uterus (Rahim)", "D": "Serviks"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Fertilisasi (peleburan inti sperma dan ovum) secara normal berlangsung di dalam Tuba Fallopii (Oviduk). Setelah membelah menjadi embrio, ia akan berjalan menuju rahim (uterus) untuk menempel (implantasi)."}}, {"nomor": 21, "tipe_soal": "MCQ", "elemen": "Perkembangbiakan Hewan", "level_kognitif": "C3", "indikator": "Disajikan gambar perkembangbiakan hydra sp., peserta didik dapat menentukan cara reproduksi organisme tersebut", "pertanyaan": "Perhatikan gambar siklus hidup Hydra sp. berikut!\n(Tampak tunas kecil tumbuh dari dinding tubuh induk Hydra sp., membesar, lalu melepaskan diri menjadi individu baru).\nCara perkembangbiakan aseksual/vegetatif yang dilakukan oleh Hydra sp. tersebut dinamakan...", "pilihan_jawaban": {"A": "Fragmentasi", "B": "Pertunasan (Tunas)", "C": "Membelah diri", "D": "Partenogenesis"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Hydra sp. berkembang biak secara aseksual alami dengan membentuk tunas pada dinding tubuhnya. Tunas tersebut menyerap nutrisi dari induk, bertambah besar, melepaskan diri, lalu hidup mandiri."}}, {"nomor": 22, "tipe_soal": "MCQ", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C2", "indikator": "Peserta didik dapat menjelaskan istilah proses pelepasan sel telur matang dari ovarium", "pertanyaan": "Pada pertengahan siklus menstruasi (sekitar hari ke-14), lonjakan hormon LH memicu pelepasan sel telur (oosit sekunder) yang telah matang dari ovarium menuju tuba fallopii. Peristiwa pelepasan sel telur matang ini disebut...", "pilihan_jawaban": {"A": "Menstruasi", "B": "Ovulasi", "C": "Implantasi", "D": "Fertilisasi"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Ovulasi adalah peristiwa pelepasan sel telur matang dari folikel ovarium. Peristiwa ini dipicu oleh tingginya kadar hormon LH (Luteinizing Hormone)."}}, {"nomor": 23, "tipe_soal": "MCQ", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C2", "indikator": "Peserta didik dapat mengurutkan organ reproduksi wanita dari bagian luar menuju ke dalam secara tepat", "pertanyaan": "Urutan saluran organ reproduksi perempuan yang benar jika ditelusuri dari bagian paling luar menuju ke bagian paling dalam adalah...", "pilihan_jawaban": {"A": "Vulva -> Vagina -> Serviks -> Uterus -> Tuba Fallopii -> Ovarium", "B": "Ovarium -> Tuba Fallopii -> Uterus -> Serviks -> Vagina -> Vulva", "C": "Vulva -> Serviks -> Vagina -> Uterus -> Ovarium -> Tuba Fallopii", "D": "Vagina -> Vulva -> Uterus -> Serviks -> Tuba Fallopii -> Ovarium"}, "kunci_jawaban": "A", "pembahasan_step_by_step": {"pembahasan": "Saluran reproduksi wanita dari luar ke dalam: Celah luar (Vulva) -> Saluran Bawah (Vagina) -> Mulut Rahim (Serviks) -> Rongga Rahim (Uterus) -> Saluran Telur (Tuba Fallopii) -> Indung Telur (Ovarium)."}}, {"nomor": 24, "tipe_soal": "MCQ", "elemen": "Perkembangbiakan Tumbuhan", "level_kognitif": "C3", "indikator": "Disajikan gambar tumbuhan paku, peserta didik dapat menentukan generasi yang lebih dominan dalam siklus hidupnya", "pertanyaan": "Perhatikan gambar daur hidup tumbuhan paku (Pteridophyta) yang mengalami pergiliran keturunan (metagenesis)! Generasi yang berumur panjang dan tampak paling dominan dalam daur hidupnya (yaitu tumbuhan paku hijau dewasa yang menghasilkan spora) adalah generasi...", "pilihan_jawaban": {"A": "Gametofit (Protalium, n)", "B": "Sporofit (Tumbuhan Paku Dewasa, 2n)", "C": "Protonema (n)", "D": "Sporogonium (2n)"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Daur hidup paku terdiri dari fase Gametofit (Protalium) dan Sporofit. Generasi Sporofit (tumbuhan paku hijau bermembran yang kita lihat sehari-hari) merupakan generasi yang dominan dan berumur panjang."}}, {"nomor": 25, "tipe_soal": "MCQ", "elemen": "Perkembangbiakan Hewan", "level_kognitif": "C3", "indikator": "Disajikan gambar siklus hidup suatu hewan, peserta didik dapat menentukan jenis metamorfosisnya", "pertanyaan": "Perhatikan diagram siklus hidup katak berikut:\nTelur -> Berudu/Kecebong (berinsang & berujung ekor) -> Katak Berkaki -> Katak Muda -> Katak Dewasa.\nJenis metamorfosis yang dialami oleh katak tersebut dikategorikan sebagai...", "pilihan_jawaban": {"A": "Metamorfosis tidak sempurna (Hemimetabola)", "B": "Metamorfosis sempurna (Holometabola)", "C": "Ametabola", "D": "Pertunasan"}, "kunci_jawaban": "B", "pembahasan_step_by_step": {"pembahasan": "Katak mengalami Metamorfosis Sempurna karena wujud larva (berudu bernapas dengan insang dan hidup di air) sangat jauh berbeda dengan wujud dewasa (katak bernapas dengan paru-paru/kulit dan hidup di darat)."}}, {"nomor": 26, "tipe_soal": "ISIAN", "elemen": "Homeostasis", "level_kognitif": "C1", "indikator": "Peserta didik dapat menyebutkan organ penghasil hormon insulin dan glukagon", "pertanyaan": "Sebutkan nama organ endokrin pada tubuh manusia yang memproduksi hormon insulin dan glukagon untuk mengontrol homeostasis kadar gula darah!", "kunci_jawaban": "Pankreas (khususnya Pulau-pulau Langerhans)", "pembahasan_step_by_step": {"pembahasan": "Organ Pankreas (sel beta & sel alfa pada Pulau Langerhans) adalah produsen utama hormon insulin dan glukagon."}}, {"nomor": 27, "tipe_soal": "ISIAN", "elemen": "Homeostasis", "level_kognitif": "C1", "indikator": "Peserta didik dapat menyebutkan jenis protein plasma darah yang berperan dalam proses pembekuan darah", "pertanyaan": "Sebutkan jenis protein terlarut dalam plasma darah yang akan diubah menjadi benang-benang fibrin saat terjadi pembekuan darah!", "kunci_jawaban": "Fibrinogen (dan Protrombin)", "pembahasan_step_by_step": {"pembahasan": "Fibrinogen adalah protein plasma darah yang diubah oleh trombin menjadi jaring-jaring fibrin untuk menutup luka."}}, {"nomor": 28, "tipe_soal": "ISIAN", "elemen": "Zat Adiktif / Narkotika", "level_kognitif": "C1", "indikator": "Peserta didik dapat menyebutkan nama lain dari tanaman Cannabis sativa yang tergolong Narkotika Golongan I", "pertanyaan": "Sebutkan nama populer di masyarakat untuk tanaman Cannabis sativa yang tergolong dalam Narkotika Golongan I!", "kunci_jawaban": "Ganja (atau Mariyuana)", "pembahasan_step_by_step": {"pembahasan": "Tanaman Cannabis sativa dikenal umum dengan nama Ganja atau Mariyuana."}}, {"nomor": 29, "tipe_soal": "ISIAN", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C1", "indikator": "Peserta didik dapat menyebutkan sel di dalam testis yang berfungsi memberikan nutrisi/makanan bagi sperma", "pertanyaan": "Sebutkan nama sel khusus di dalam tubulus seminiferus testis yang berfungsi memberikan nutrisi bagi sel sperma yang sedang berkembang!", "kunci_jawaban": "Sel Sertoli", "pembahasan_step_by_step": {"pembahasan": "Sel Sertoli berfungsi memberi nutrisi dan cadangan makanan bagi sel sperma selama proses spermatogenesis di testis."}}, {"nomor": 30, "tipe_soal": "ISIAN", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C1", "indikator": "Peserta didik dapat menyebutkan istilah proses pembentukan sel kelamin jantan (sperma) pada laki-laki", "pertanyaan": "Sebutkan istilah biologis untuk proses pembentukan dan pematangan sel sperma yang berlangsung di testis!", "kunci_jawaban": "Spermatogenesis", "pembahasan_step_by_step": {"pembahasan": "Spermatogenesis adalah proses pembuatan dan pembelahan meiosis sperma pada pria."}}, {"nomor": 31, "tipe_soal": "ESSAY", "elemen": "Homeostasis", "level_kognitif": "C3", "indikator": "Peserta didik dapat menggambarkan sistem sel saraf beserta nama dan fungsinya", "pertanyaan": "Gambarkan skema/bagan struktur satu sel saraf (neuron) dan jelaskan 5 bagian utama penyusunnya beserta fungsinya masing-masing dalam menghantarkan impuls!", "pembahasan_step_by_step": {"kunci_jawaban": "Bagian Utama Sel Saraf (Neuron):\n1. Dendrit: Menerima impuls dari sel lain dan meneruskannya ke badan sel.\n2. Badan Sel: Mengendalikan seluruh metabolisme sel saraf.\n3. Akson (Neurit): Menghantarkan impuls dari badan sel menuju neuron lain atau efektor.\n4. Selubung Mielin: Melindungi akson dan mempercepat hantaran impuls.\n5. Nodus Ranvier: Celah akson tanpa mielin untuk melompatkan impuls agar bergerak cepat.\n6. Sinapsis: Titik temu antar-ujung akson dengan sel lain melalui neurotransmiter.", "pembahasan": "Neuron tersusun atas Dendrit (penerima), Badan Sel (pengolah), Akson (pengirim panjang), Selubung Mielin (pelindung isolator), Nodus Ranvier (celah pemcepat sinyal), dan Sinapsis (penghubung kimiawi)."}}, {"nomor": 32, "tipe_soal": "ESSAY", "elemen": "Zat Adiktif", "level_kognitif": "C4", "indikator": "Peserta didik dapat menjelaskan 4 hal yang sebaiknya dihindari saat minum teh beserta alasannya bagi kesehatan", "pertanyaan": "Analisislah 4 kebiasaan atau cara mengonsumsi teh yang sebaiknya dihindari beserta penjelasan dampaknya bagi kesehatan tubuh!", "pembahasan_step_by_step": {"kunci_jawaban": "4 Hal yang Dihindari saat Minum Teh:\n1. Minum teh bersamaan/langsung setelah makan: Senyawa tanin mengikat zat besi (Fe) makanan sehingga memicu anemia.\n2. Minum teh saat perut kosong: Merangsang peningkatan asam lambung yang memicu iritasi lambung.\n3. Minum teh terlalu panas: Suhu tinggi merusak sel-sel mukosa kerongkongan.\n4. Minum teh pekat berlebihan sebelum tidur: Kandungan kafein menyebabkan insomnia dan memperberat kerja ginjal.", "pembahasan": "Teh mengandung tanin (mengikat zat besi jika diminum bersama makan) dan kafein (menyebabkan susah tidur jika diminum malam hari/pekat)."}}, {"nomor": 33, "tipe_soal": "ESSAY", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C2", "indikator": "Peserta didik dapat menyebutkan 4 macam penyakit sistem reproduksi manusia beserta mikroorganisme penyebabnya", "pertanyaan": "Sebutkan 4 macam penyakit menular seksual pada sistem reproduksi manusia beserta mikroorganisme (bakteri/virus/jamur) penyebabnya secara spesifik!", "pembahasan_step_by_step": {"kunci_jawaban": "4 Penyakit Reproduksi & Penyebabnya:\n1. AIDS: Disebabkan oleh virus HIV (Human Immunodeficiency Virus).\n2. Gonore (Kencing Nanah): Disebabkan oleh bakteri Neisseria gonorrhoeae.\n3. Sifilis (Raja Singa): Disebabkan oleh bakteri Treponema pallidum.\n4. Keputihan Patologis: Disebabkan oleh infeksi jamur Candida albicans (atau Herpes Genitalis oleh virus Herpes simplex tipe II).", "pembahasan": "Penyakit reproduksi dapat dipicu infeksi virus (HIV, Herpes), bakteri (Neisseria, Treponema), atau jamur (Candida)."}}, {"nomor": 34, "tipe_soal": "ESSAY", "elemen": "Sistem Reproduksi Tumbuhan", "level_kognitif": "C4", "indikator": "Disajikan gambar tumbuhan stroberi dan jahe, peserta didik dapat menjelaskan persamaan dan perbedaan cara reproduksi kedua tumbuhan tersebut", "pertanyaan": "Analisislah persamaan dan perbedaan mekanisme perkembangbiakan vegetatif antara tumbuhan stroberi dan tumbuhan jahe!", "pembahasan_step_by_step": {"kunci_jawaban": "Persamaan dan Perbedaan Reproduksi Stroberi & Jahe:\n- Persamaan: Keduanya berkembang biak secara vegetatif alami (aseksual) tanpa fertilisasi dan tanpa bantuan manusia.\n- Perbedaan:\n  1. Stroberi berkembang biak menggunakan Stolon (Geragih), yaitu batang yang menjalar di atas permukaan tanah.\n  2. Jahe berkembang biak menggunakan Rhizoma (Rimpang), yaitu batang beruas-ruas yang menjalar di dalam tanah.", "pembahasan": "Persamaan: vegetatif alami. Perbedaan: stroberi pakai stolon (di atas tanah), jahe pakai rhizoma (di dalam tanah)."}}, {"nomor": 35, "tipe_soal": "ESSAY", "elemen": "Sistem Reproduksi Manusia", "level_kognitif": "C4", "indikator": "Peserta didik dapat menjelaskan proses fertilisasi pada manusia serta tahapan/peristiwa yang terjadi setelah fertilisasi berlangsung", "pertanyaan": "Jelaskan proses fertilisasi pada manusia beserta lokasi terjadinya, dan uraikan 4 tahapan perkembangan selanjutnya hingga janin siap dilahirkan!", "pembahasan_step_by_step": {"kunci_jawaban": "Fertilisasi & Tahapan Pasca-Fertilisasi:\n- Fertilisasi: Peleburan inti sel sperma (n) dan inti sel telur (n) yang berlangsung di Tuba Fallopii (Oviduk) menghasilkan Zigot (2n).\n- Tahapan Selanjutnya:\n  1. Morula: Zigot membelah mitosis berulang kali membentuk bola sel padat.\n  2. Blastula (Blastosis): Morula berkembang menjadi bola sel berongga.\n  3. Implantasi: Blastosis menempel dan tertanam pada lapisan endometrium dinding rahim.\n  4. Organogenesis / Janin: Embrio membentuk organ tubuh dan plasenta hingga berkembang menjadi janin (fetus) di dalam rahim.", "pembahasan": "Fertilisasi di tuba fallopii -> Zigot -> Morula -> Blastosis -> Menempel di dinding rahim (Implantasi) -> Tumbuh Janin (Fetus)."}}]</script>
+<script id="meta-data" type="application/json">{"judul_asesmen": "Asesmen Sumatif Tengah Semester (ASTS) Gasal", "tahun_ajaran": "2026/2027", "mata_pelajaran": "IPA (Biologi)", "kelas": "IX (Sembilan)", "fase": "D", "kurikulum": "Kurikulum Merdeka", "acuan_kisi_kisi": "KISI KISI UTS IPA 9 26-27.pdf", "total_soal": 35, "distribusi_bentuk_soal": {"pilihan_ganda_mcq": "Nomor 1 - 25 (25 Soal)", "isian_singkat": "Nomor 26 - 30 (5 Soal)", "uraian_essay": "Nomor 31 - 35 (5 Soal)"}}</script>
+
+<script>
+/* =========================================================
+   ASTS MATEMATIKA VI — LMS ENGINE
+   ========================================================= */
+(function(){
+"use strict";
+
+const RAW = JSON.parse(document.getElementById('soal-data').textContent);
+const META = JSON.parse(document.getElementById('meta-data').textContent);
+const STORAGE_KEY = "lms_asts_ipa_kelas9_v1";
+
+/* ---------- State ---------- */
+let state = {
+  studentName: "",
+  currentIndex: 0,
+  answers: {},      // nomor -> answer value (string / array / object for match)
+  checked: {},       // nomor -> true once "cek jawaban" pressed (locked)
+  correctness: {}    // nomor -> true/false/null(manual) once checked
+};
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state = Object.assign(state, parsed);
+    }
+  }catch(e){ console.warn("Gagal memuat progres tersimpan:", e); }
+}
+function saveState(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ console.warn("Gagal menyimpan progres:", e); }
+}
+
+/* ---------- LaTeX-ish renderer (offline, tailored to dataset) ---------- */
+function renderMath(str){
+  if(str===undefined || str===null) return "";
+  str = String(str);
+
+  // paragraphs by real newlines
+  const parts = str.split(/\n/);
+  return parts.map(line=>renderLine(line)).join("<br>");
+}
+
+function renderLine(line){
+  // Detect markdown-ish table lines "| a | b |"
+  let out = "";
+  let i = 0;
+  while(i < line.length){
+    if(line[i] === '$'){
+      // display math $$...$$
+      if(line[i+1] === '$'){
+        const end = line.indexOf('$$', i+2);
+        const inner = end===-1 ? line.slice(i+2) : line.slice(i+2, end);
+        out += '<span class="eq-block">' + renderTex(inner) + '</span>';
+        i = end===-1 ? line.length : end+2;
+      } else {
+        const end = line.indexOf('$', i+1);
+        const inner = end===-1 ? line.slice(i+1) : line.slice(i+1, end);
+        out += renderTex(inner);
+        i = end===-1 ? line.length : end+1;
+      }
+    } else {
+      out += escapeHtml(line[i]);
+      i++;
+    }
+  }
+  return out;
+}
+
+function escapeHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Parse a balanced {...} group starting at index (which must point at '{')
+function readGroup(s, idx){
+  if(s[idx] !== '{') return {content:"", next:idx};
+  let depth = 0, j = idx;
+  for(; j<s.length; j++){
+    if(s[j] === '{') depth++;
+    else if(s[j] === '}'){ depth--; if(depth===0){ j++; break; } }
+  }
+  return {content: s.slice(idx+1, j-1), next: j};
+}
+
+function renderTex(tex){
+  let out = "";
+  let i = 0;
+  while(i < tex.length){
+    if(tex.startsWith('\\frac', i)){
+      let j = i + 5;
+      const g1 = readGroup(tex, j);
+      const g2 = readGroup(tex, g1.next);
+      out += '<span class="frac"><span class="num">'+renderTex(g1.content)+'</span><span class="den">'+renderTex(g2.content)+'</span></span>';
+      i = g2.next;
+    } else if(tex.startsWith('\\text', i)){
+      let j = i + 5;
+      const g1 = readGroup(tex, j);
+      out += '<span class="mathtext">'+renderTex(g1.content)+'</span>';
+      i = g1.next;
+    } else if(tex.startsWith('\\times', i)){ out += ' × '; i += 6; }
+    else if(tex.startsWith('\\div', i)){ out += ' ÷ '; i += 4; }
+    else if(tex.startsWith('\\rightarrow', i)){ out += ' → '; i += 11; }
+    else if(tex.startsWith('\\leftarrow', i)){ out += ' ← '; i += 10; }
+    else if(tex.startsWith('\\dots', i)){ out += ' _____ '; i += 5; }
+    else if(tex.startsWith('\\leq', i)){ out += ' ≤ '; i += 4; }
+    else if(tex.startsWith('\\geq', i)){ out += ' ≥ '; i += 4; }
+    else if(tex.startsWith('\\neq', i)){ out += ' ≠ '; i += 4; }
+    else if(tex.startsWith('{,}', i)){ out += ','; i += 3; }
+    else if(tex[i] === '^'){
+      if(tex[i+1] === '{'){
+        const g = readGroup(tex, i+1);
+        out += '<sup>'+renderTex(g.content)+'</sup>';
+        i = g.next;
+      } else if(tex[i+1] !== undefined){
+        out += '<sup>'+escapeHtml(tex[i+1])+'</sup>';
+        i += 2;
+      } else { i++; }
+    }
+    else if(tex.startsWith('\\,', i) || tex.startsWith('\\;', i)){ out += ' '; i += 2; }
+    else if(tex[i] === '\\' ){
+      // skip unknown control word
+      let j = i+1;
+      while(j<tex.length && /[a-zA-Z]/.test(tex[j])) j++;
+      if(j===i+1) j++; // escaped symbol like \% or \$
+      i = j;
+    } else if(tex[i] === '{' || tex[i] === '}'){
+      i++; // stray brace, ignore
+    } else {
+      out += escapeHtml(tex[i]);
+      i++;
+    }
+  }
+  return out;
+}
+
+// Render a stimulus block which may contain a markdown table + text
+function renderStimulus(str){
+  if(!str) return "";
+  const lines = str.split("\n");
+  let html = "";
+  let tableRows = [];
+  let inTable = false;
+  function flushTable(){
+    if(tableRows.length===0) return;
+    let rows = tableRows.filter(r => !/^\s*\|?\s*-{2,}/.test(r.replace(/\|/g,'|')));
+    // remove separator row (---|---)
+    rows = tableRows.filter(r => !/^[\s|:-]+$/.test(r));
+    html += "<table>";
+    rows.forEach((r,ri)=>{
+      const cells = r.split("|").map(c=>c.trim()).filter((c,ci,arr)=>!(ci===0 && c==="") && !(ci===arr.length-1 && c===""));
+      const tag = ri===0 ? "th" : "td";
+      html += "<tr>" + cells.map(c=>"<"+tag+">"+renderLine(c)+"</"+tag+">").join("") + "</tr>";
+    });
+    html += "</table>";
+    tableRows = [];
+  }
+  lines.forEach(line=>{
+    if(/^\s*\|/.test(line)){
+      inTable = true;
+      tableRows.push(line);
+    } else {
+      if(inTable){ flushTable(); inTable = false; }
+      if(line.trim()!=="") html += "<p>"+renderLine(line)+"</p>";
+    }
+  });
+  if(inTable) flushTable();
+  return html;
+}
+
+/* ---------- Normalizer for ISIAN auto-check ---------- */
+function normalizeAnswer(s){
+  if(s===undefined||s===null) return "";
+  let t = String(s);
+  t = t.replace(/\$/g,"");
+  t = t.replace(/\{,\}/g,",");
+  // convert \frac{a}{b} -> a/b (best effort, non-nested)
+  let changed = true, guard=0;
+  while(changed && guard<20){
+    changed = false; guard++;
+    t = t.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (m,a,b)=>{ changed=true; return a+"/"+b; });
+  }
+  t = t.replace(/\\text\{([^{}]*)\}/g, "$1");
+  t = t.replace(/\\times/g,"x").replace(/\\div/g,":");
+  t = t.replace(/[\\{}]/g,"");
+  t = t.replace(/\s+/g,"");
+  t = t.toLowerCase();
+  t = t.replace(/,/g,".");
+  // also allow "a¾" style not handled; keep as-is
+  return t;
+}
+
+/* ---------- Grouping ---------- */
+const TYPE_LABEL = {MCQ:"Pilihan Ganda", MCMA:"PG Kompleks", MATCH:"Menjodohkan", ISIAN:"Isian Singkat", ESSAY:"Uraian"};
+const TYPE_ORDER = ["MCQ","MCMA","MATCH","ISIAN","ESSAY"];
+const groups = {};
+TYPE_ORDER.forEach(t=>groups[t]=[]);
+RAW.forEach(q=>groups[q.tipe_soal].push(q));
+
+const AUTO_TYPES = ["MCQ","MCMA","MATCH","ISIAN"];
+
+/* ---------- DOM refs ---------- */
+const $ = sel => document.querySelector(sel);
+const bodyWrap = $("#body-wrap");
+const hamburger = $("#hamburger");
+const navGroup = $("#navgrid-group");
+const questionCard = $("#question-card");
+const hdrAnswered = $("#hdr-answered");
+const hdrTotal = $("#hdr-total");
+const progressFill = $("#header-progress-fill");
+const btnPrev = $("#btn-prev");
+const btnNext = $("#btn-next");
+
+$("#hdr-title").textContent = META.judul_asesmen + " — " + META.mata_pelajaran;
+$("#hdr-sub").textContent = "Kelas " + META.kelas + " · " + META.kurikulum + " · TA " + META.tahun_ajaran;
+hdrTotal.textContent = RAW.length;
+
+$("#start-title").textContent = META.judul_asesmen;
+$("#start-sub").textContent = META.mata_pelajaran + " · Kelas " + META.kelas + " · TA " + META.tahun_ajaran + " — Isi nama lengkapmu sebelum mulai mengerjakan.";
+
+/* ---------- Sidebar navigation build ---------- */
+function buildNav(){
+  navGroup.innerHTML = "";
+  TYPE_ORDER.forEach(type=>{
+    const list = groups[type];
+    if(list.length===0) return;
+    const wrap = document.createElement("div");
+    wrap.className = "nav-section";
+    const title = document.createElement("div");
+    title.className = "sec-title";
+    title.textContent = TYPE_LABEL[type] + " (" + list[0].nomor + "–" + list[list.length-1].nomor + ")";
+    wrap.appendChild(title);
+    const grid = document.createElement("div");
+    grid.className = "nav-grid";
+    list.forEach(q=>{
+      const b = document.createElement("button");
+      b.className = "nav-btn";
+      b.textContent = q.nomor;
+      b.dataset.nomor = q.nomor;
+      b.addEventListener("click", ()=>{ goToNomor(q.nomor); closeMobileSidebar(); });
+      grid.appendChild(b);
+    });
+    wrap.appendChild(grid);
+    navGroup.appendChild(wrap);
+  });
+  refreshNavStates();
+}
+
+function refreshNavStates(){
+  document.querySelectorAll(".nav-btn").forEach(btn=>{
+    const nomor = btn.dataset.nomor;
+    btn.classList.remove("answered","checked-correct","checked-wrong","current");
+    if(hasAnswer(nomor)) btn.classList.add("answered");
+    if(state.checked[nomor]){
+      const c = state.correctness[nomor];
+      if(c===true) btn.classList.add("checked-correct");
+      else if(c===false) btn.classList.add("checked-wrong");
+    }
+    if(Number(nomor)===currentQ().nomor) btn.classList.add("current");
+  });
+  const answeredCount = RAW.filter(q=>hasAnswer(q.nomor)).length;
+  hdrAnswered.textContent = answeredCount;
+  progressFill.style.width = Math.round(answeredCount/RAW.length*100)+"%";
+}
+
+function hasAnswer(nomor){
+  const a = state.answers[nomor];
+  if(a===undefined||a===null) return false;
+  if(Array.isArray(a)) return a.length>0;
+  if(typeof a === "object") return Object.keys(a).some(k=>a[k]!==undefined && a[k]!=="");
+  return String(a).trim()!=="";
+}
+
+/* ---------- Sidebar toggle ---------- */
+let sidebarHiddenDesktop = false;
+function isMobile(){ return window.innerWidth <= 680; }
+hamburger.addEventListener("click", ()=>{
+  if(isMobile()){
+    const willOpen = !bodyWrap.classList.contains("mobile-open");
+    bodyWrap.classList.toggle("mobile-open", willOpen);
+    bodyWrap.classList.toggle("sidebar-hidden", !willOpen);
+  } else {
+    sidebarHiddenDesktop = !sidebarHiddenDesktop;
+    bodyWrap.classList.toggle("sidebar-hidden", sidebarHiddenDesktop);
+  }
+});
+$("#backdrop").addEventListener("click", closeMobileSidebar);
+function closeMobileSidebar(){
+  bodyWrap.classList.remove("mobile-open");
+  if(isMobile()) bodyWrap.classList.add("sidebar-hidden");
+}
+
+/* ---------- Navigation ---------- */
+function currentQ(){ return RAW[state.currentIndex]; }
+function goToNomor(nomor){
+  const idx = RAW.findIndex(q=>q.nomor===nomor);
+  if(idx>=0){ state.currentIndex = idx; saveState(); renderQuestion(); }
+}
+function goToIndex(idx){
+  if(idx<0) idx=0;
+  if(idx>=RAW.length) idx=RAW.length-1;
+  state.currentIndex = idx;
+  saveState();
+  renderQuestion();
+}
+btnPrev.addEventListener("click", ()=>goToIndex(state.currentIndex-1));
+btnNext.addEventListener("click", ()=>{
+  if(state.currentIndex >= RAW.length-1){ openResult(); }
+  else goToIndex(state.currentIndex+1);
+});
+
+/* ---------- Rendering current question ---------- */
+function renderQuestion(){
+  const q = currentQ();
+  const nomor = q.nomor;
+  const isChecked = !!state.checked[nomor];
+
+  let html = "";
+  html += `<div class="q-meta">
+    <span class="q-badge ${q.tipe_soal}">${TYPE_LABEL[q.tipe_soal]}</span>
+    <span class="q-num">Nomor ${q.nomor} dari ${RAW.length}</span>
+    <span class="q-level">${escapeHtml(q.level_kognitif||"")}</span>
+  </div>`;
+
+  if(q.stimulus_bentuk_panjang) html += `<div class="q-stimulus">${renderStimulus(q.stimulus_bentuk_panjang)}</div>`;
+  if(q.stimulus_tabel) html += `<div class="q-stimulus">${renderStimulus(q.stimulus_tabel)}</div>`;
+
+  if(q.pertanyaan) html += `<div class="q-text">${renderStimulus(q.pertanyaan)}</div>`;
+  if(q.instruksi) html += `<div class="q-text" style="font-style:italic;color:var(--ink-soft);font-size:14px;">${renderMath(q.instruksi)}</div>`;
+
+  html += buildAnswerArea(q, isChecked);
+  html += buildActionRow(q, isChecked);
+  if(isChecked) html += buildFeedback(q);
+
+  questionCard.innerHTML = html;
+  attachAnswerHandlers(q);
+  attachActionHandlers(q);
+
+  btnPrev.disabled = state.currentIndex===0;
+  btnNext.textContent = state.currentIndex===RAW.length-1 ? "Selesai & Lihat Skor" : "Berikutnya →";
+
+  refreshNavStates();
+  document.getElementById("main-scroll").scrollTop = 0;
+}
+
+function buildAnswerArea(q, isChecked){
+  const nomor = q.nomor;
+  const lockedCls = isChecked ? "locked" : "";
+  if(q.tipe_soal==="MCQ"){
+    const sel = state.answers[nomor];
+    let rows = "";
+    Object.keys(q.pilihan_jawaban).forEach(k=>{
+      let cls = "opt";
+      if(sel===k) cls += " selected";
+      if(isChecked){
+        if(k===q.kunci_jawaban) cls += " correct-mark";
+        else if(sel===k && k!==q.kunci_jawaban) cls += " wrong-mark";
+      }
+      rows += `<label class="${cls} ${lockedCls}" data-key="${k}">
+        <input type="radio" name="mcq-${nomor}" value="${k}" ${sel===k?"checked":""} ${isChecked?"disabled":""}>
+        <span class="opt-label">${k}</span>
+        <span class="opt-text">${renderMath(q.pilihan_jawaban[k])}</span>
+        ${isChecked && k===q.kunci_jawaban ? '<span class="opt-icon" style="color:var(--ok);">✓</span>' : ''}
+        ${isChecked && sel===k && k!==q.kunci_jawaban ? '<span class="opt-icon" style="color:var(--bad);">✕</span>' : ''}
+      </label>`;
+    });
+    return `<div class="opt-list">${rows}</div>`;
+  }
+
+  if(q.tipe_soal==="MCMA"){
+    const sel = Array.isArray(state.answers[nomor]) ? state.answers[nomor] : [];
+    const key = q.kunci_jawaban_kompleks || [];
+    let rows = "";
+    Object.keys(q.pilihan_jawaban).forEach(k=>{
+      let cls = "opt";
+      if(sel.includes(k)) cls += " selected";
+      if(isChecked){
+        if(key.includes(k)) cls += " correct-mark";
+        else if(sel.includes(k) && !key.includes(k)) cls += " wrong-mark";
+      }
+      rows += `<label class="${cls} ${lockedCls}" data-key="${k}">
+        <input type="checkbox" name="mcma-${nomor}" value="${k}" ${sel.includes(k)?"checked":""} ${isChecked?"disabled":""}>
+        <span class="opt-label">${k}</span>
+        <span class="opt-text">${renderMath(q.pilihan_jawaban[k])}</span>
+        ${isChecked && key.includes(k) ? '<span class="opt-icon" style="color:var(--ok);">✓</span>' : ''}
+        ${isChecked && sel.includes(k) && !key.includes(k) ? '<span class="opt-icon" style="color:var(--bad);">✕</span>' : ''}
+      </label>`;
+    });
+    return `<div class="opt-list">${rows}</div><p class="isian-hint">Boleh memilih lebih dari satu jawaban.</p>`;
+  }
+
+  if(q.tipe_soal==="MATCH"){
+    const sel = (typeof state.answers[nomor]==="object" && state.answers[nomor]) ? state.answers[nomor] : {};
+    const options = q.pasangan_soal.map(p=>({id:p.kunci_jawaban_id, teks:p.kunci_jawaban_teks}));
+    let rows = "";
+    q.pasangan_soal.forEach(p=>{
+      const chosen = sel[p.id_pernyataan] || "";
+      let rowCls = "match-row";
+      let icon = "";
+      if(isChecked){
+        const correct = chosen === p.kunci_jawaban_id;
+        rowCls += correct ? " correct-mark" : " wrong-mark";
+        icon = correct ? '<span class="match-icon" style="color:var(--ok);">✓</span>' : '<span class="match-icon" style="color:var(--bad);">✕</span>';
+      }
+      let opts = `<option value="">— pilih —</option>`;
+      options.forEach(o=>{
+        opts += `<option value="${o.id}" ${chosen===o.id?"selected":""}>${stripMathToPlain(o.teks)}</option>`;
+      });
+      rows += `<div class="${rowCls} ${lockedCls}">
+        <div class="match-left">${p.id_pernyataan.replace(/\d+/,"")===""?"":""}${renderMath(p.pernyataan)}</div>
+        <select class="match-select" data-pernyataan="${p.id_pernyataan}" ${isChecked?"disabled":""}>${opts}</select>
+        ${icon}
+      </div>`;
+    });
+    return `<div class="match-wrap">${rows}</div>`;
+  }
+
+  if(q.tipe_soal==="ISIAN"){
+    const val = state.answers[nomor] || "";
+    return `<input type="text" class="isian-input ${lockedCls}" id="isian-${nomor}" value="${escapeAttr(val)}" placeholder="Ketik jawabanmu di sini…" ${isChecked?"disabled":""}>
+    <p class="isian-hint">Tulis pecahan dengan format a/b (contoh: 3/4) dan desimal dengan koma (contoh: 0,75).</p>`;
+  }
+
+  if(q.tipe_soal==="ESSAY"){
+    const val = state.answers[nomor] || "";
+    return `<textarea class="essay-input ${lockedCls}" id="essay-${nomor}" placeholder="Tulis jawaban dan langkah pengerjaanmu di sini…" ${isChecked?"disabled":""}>${escapeHtml(val)}</textarea>`;
+  }
+  return "";
+}
+
+function stripMathToPlain(t){
+  // used inside <option> where HTML tags won't render — produce plain text
+  const div = document.createElement("div");
+  div.innerHTML = renderMath(t);
+  return div.textContent;
+}
+function escapeAttr(s){ return String(s).replace(/&/g,"&amp;").replace(/"/g,"&quot;"); }
+
+function buildActionRow(q, isChecked){
+  const nomor = q.nomor;
+  const canCheck = hasAnswer(nomor) && !isChecked;
+  if(q.tipe_soal==="ESSAY"){
+    return `<div class="q-actions">
+      <button class="btn btn-amber" id="btn-check" ${canCheck?"":"disabled"}>${isChecked?"Sudah Dikunci":"Lihat Kunci & Rubrik"}</button>
+    </div>`;
+  }
+  return `<div class="q-actions">
+    <button class="btn btn-amber" id="btn-check" ${canCheck?"":"disabled"}>${isChecked?"Sudah Dikoreksi":"Cek Jawaban"}</button>
+  </div>`;
+}
+
+function buildFeedback(q){
+  const nomor = q.nomor;
+  const c = state.correctness[nomor];
+
+  if(q.tipe_soal==="ESSAY"){
+    let html = `<div class="feedback neutral"><div class="feedback-title">📘 Kunci &amp; Pembahasan</div>`;
+    html += renderPembahasan(q.pembahasan_step_by_step);
+    if(q.rubrik_penilaian) html += `<div class="rubrik-box"><b>Rubrik penilaian:</b> ${renderMath(q.rubrik_penilaian)}</div>`;
+    html += `<div class="rubrik-box">Jawaban uraian dinilai manual oleh guru berdasarkan rubrik di atas — tidak termasuk skor otomatis.</div>`;
+    html += `</div>`;
+    return html;
+  }
+
+  let title, cls;
+  if(q.tipe_soal==="ISIAN"){
+    cls = c ? "ok" : "bad";
+    title = (c ? "✅ Cocok dengan kunci jawaban" : "⚠️ Perlu diperiksa kembali") ;
+  } else {
+    cls = c ? "ok" : "bad";
+    title = c ? "✅ Jawaban Benar" : "❌ Jawaban Belum Tepat";
+  }
+
+  let html = `<div class="feedback ${cls}"><div class="feedback-title">${title}</div>`;
+
+  if(q.tipe_soal==="MCQ"){
+    html += `<div>Kunci jawaban: <span class="kunci">${q.kunci_jawaban}. ${renderMath(q.pilihan_jawaban[q.kunci_jawaban])}</span></div>`;
+  } else if(q.tipe_soal==="MCMA"){
+    html += `<div>Kunci jawaban: <span class="kunci">${(q.kunci_jawaban_kompleks||[]).join(", ")}</span></div>`;
+  } else if(q.tipe_soal==="ISIAN"){
+    html += `<div>Kunci jawaban: <span class="kunci">${renderMath(q.kunci_jawaban)}</span></div>
+    <div class="isian-hint">Pencocokan otomatis bisa meleset karena variasi cara menulis pecahan/desimal — periksa kembali pembahasan di bawah untuk memastikan.</div>`;
+  } else if(q.tipe_soal==="MATCH"){
+    html += `<div>Lihat tanda ✓/✕ pada masing-masing pasangan di atas.</div>`;
+  }
+
+  html += renderPembahasan(q.pembahasan_step_by_step);
+  html += `</div>`;
+  return html;
+}
+
+function renderPembahasan(obj){
+  if(!obj) return "";
+  let html = `<div class="pembahasan">`;
+  Object.keys(obj).forEach(k=>{
+    const label = prettifyKey(k);
+    html += `<div class="pembahasan-step"><b>${label}:</b> ${renderMath(obj[k])}</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+function prettifyKey(k){
+  return k.replace(/_/g," ")
+    .replace(/\bkonsep dasar\b/i,"Konsep dasar")
+    .replace(/\blangkah/i,"Langkah")
+    .replace(/\bkesimpulan\b/i,"Kesimpulan")
+    .replace(/\bevaluasi\b/i,"Evaluasi")
+    .replace(/^./, c=>c.toUpperCase());
+}
+
+/* ---------- Answer capture handlers ---------- */
+function attachAnswerHandlers(q){
+  const nomor = q.nomor;
+  if(q.tipe_soal==="MCQ"){
+    document.querySelectorAll(`input[name="mcq-${nomor}"]`).forEach(inp=>{
+      inp.addEventListener("change", e=>{
+        state.answers[nomor] = e.target.value;
+        saveState();
+        renderQuestion();
+      });
+    });
+  } else if(q.tipe_soal==="MCMA"){
+    document.querySelectorAll(`input[name="mcma-${nomor}"]`).forEach(inp=>{
+      inp.addEventListener("change", ()=>{
+        const checked = Array.from(document.querySelectorAll(`input[name="mcma-${nomor}"]:checked`)).map(i=>i.value);
+        state.answers[nomor] = checked;
+        saveState();
+        renderQuestion();
+      });
+    });
+  } else if(q.tipe_soal==="MATCH"){
+    document.querySelectorAll(`.match-select`).forEach(sel=>{
+      sel.addEventListener("change", e=>{
+        const cur = (typeof state.answers[nomor]==="object" && state.answers[nomor]) ? state.answers[nomor] : {};
+        cur[e.target.dataset.pernyataan] = e.target.value;
+        state.answers[nomor] = cur;
+        saveState();
+        refreshNavStates();
+        // don't full re-render to keep focus smooth; but action row needs enabling
+        const btn = document.getElementById("btn-check");
+        if(btn) btn.disabled = !hasAnswer(nomor);
+      });
+    });
+  } else if(q.tipe_soal==="ISIAN"){
+    const inp = document.getElementById(`isian-${nomor}`);
+    if(inp) inp.addEventListener("input", e=>{
+      state.answers[nomor] = e.target.value;
+      saveState();
+      refreshNavStates();
+      const btn = document.getElementById("btn-check");
+      if(btn) btn.disabled = !hasAnswer(nomor);
+    });
+  } else if(q.tipe_soal==="ESSAY"){
+    const ta = document.getElementById(`essay-${nomor}`);
+    if(ta) ta.addEventListener("input", e=>{
+      state.answers[nomor] = e.target.value;
+      saveState();
+      refreshNavStates();
+      const btn = document.getElementById("btn-check");
+      if(btn) btn.disabled = !hasAnswer(nomor);
+    });
+  }
+}
+
+function attachActionHandlers(q){
+  const btn = document.getElementById("btn-check");
+  if(btn) btn.addEventListener("click", ()=>{ checkAnswer(q); });
+}
+
+function checkAnswer(q){
+  const nomor = q.nomor;
+  state.checked[nomor] = true;
+
+  if(q.tipe_soal==="MCQ"){
+    state.correctness[nomor] = (state.answers[nomor] === q.kunci_jawaban);
+  } else if(q.tipe_soal==="MCMA"){
+    const sel = (state.answers[nomor]||[]).slice().sort();
+    const key = (q.kunci_jawaban_kompleks||[]).slice().sort();
+    state.correctness[nomor] = JSON.stringify(sel)===JSON.stringify(key);
+  } else if(q.tipe_soal==="MATCH"){
+    const sel = state.answers[nomor] || {};
+    let correctCount = 0;
+    q.pasangan_soal.forEach(p=>{ if(sel[p.id_pernyataan]===p.kunci_jawaban_id) correctCount++; });
+    state.correctness[nomor] = correctCount / q.pasangan_soal.length; // fraction 0..1
+  } else if(q.tipe_soal==="ISIAN"){
+    const a = normalizeAnswer(state.answers[nomor]);
+    const k = normalizeAnswer(q.kunci_jawaban);
+    state.correctness[nomor] = (a.length>0 && a===k);
+  } else if(q.tipe_soal==="ESSAY"){
+    state.correctness[nomor] = null; // manual
+  }
+  saveState();
+  renderQuestion();
+}
+
+/* ---------- Scoring & Result ---------- */
+function computeScore(){
+  let earned = 0, max = 0;
+  const perType = {};
+  AUTO_TYPES.forEach(t=>perType[t]={earned:0,max:0,label:TYPE_LABEL[t]});
+  const perLevel = {};
+
+  RAW.forEach(q=>{
+    if(!AUTO_TYPES.includes(q.tipe_soal)) return;
+    const w = 1; // weight per nomor
+    max += w;
+    perType[q.tipe_soal].max += w;
+    let got = 0;
+    if(state.checked[q.nomor]){
+      const c = state.correctness[q.nomor];
+      if(q.tipe_soal==="MATCH") got = (typeof c==="number") ? c*w : 0;
+      else got = c ? w : 0;
+    }
+    earned += got;
+    perType[q.tipe_soal].earned += got;
+
+    const lvl = (q.level_kognitif||"Lainnya").replace(/\s*\(.*?\)/,"");
+    if(!perLevel[lvl]) perLevel[lvl] = {earned:0,max:0};
+    perLevel[lvl].max += w;
+    perLevel[lvl].earned += got;
+  });
+
+  const essayList = RAW.filter(q=>q.tipe_soal==="ESSAY");
+  const essayChecked = essayList.filter(q=>state.checked[q.nomor]).length;
+
+  return {earned, max, perType, perLevel, essayList, essayChecked};
+}
+
+function openResult(){
+  const r = computeScore();
+  const pct = r.max>0 ? Math.round(r.earned/r.max*100) : 0;
+
+  let typeHtml = "";
+  AUTO_TYPES.forEach(t=>{
+    const d = r.perType[t];
+    if(d.max===0) return;
+    typeHtml += `<div class="result-item"><div class="n">${round1(d.earned)}/${d.max}</div><div class="l">${d.label}</div></div>`;
+  });
+
+  let levelHtml = "";
+  Object.keys(r.perLevel).sort().forEach(lvl=>{
+    const d = r.perLevel[lvl];
+    const p = d.max>0 ? Math.round(d.earned/d.max*100) : 0;
+    levelHtml += `<div class="level-row">
+      <div class="lname">${escapeHtml(lvl)}</div>
+      <div class="level-bar-bg"><div class="level-bar-fill" style="width:${p}%;"></div></div>
+      <div class="lval">${p}%</div>
+    </div>`;
+  });
+
+  const unanswered = RAW.filter(q=>!hasAnswer(q.nomor)).map(q=>q.nomor);
+  const uncheckedAuto = RAW.filter(q=>AUTO_TYPES.includes(q.tipe_soal) && hasAnswer(q.nomor) && !state.checked[q.nomor]).map(q=>q.nomor);
+
+  let modal = `
+    <h2>Hasil Pengerjaan</h2>
+    <div class="sub"><b>${escapeHtml(state.studentName||"-")}</b> · ${META.judul_asesmen} · ${META.mata_pelajaran} Kelas ${META.kelas}</div>
+    <div class="score-hero">
+      <div class="num">${pct}</div>
+      <div class="lbl">Skor otomatis dari soal Pilihan Ganda, PG Kompleks,<br>Menjodohkan &amp; Isian (${round1(r.earned)} dari ${r.max} poin)</div>
+    </div>
+    <div class="result-grid">${typeHtml}</div>
+    <div class="sec-title" style="margin-top:0;">Analisis Penguasaan per Level Kognitif</div>
+    <div id="level-breakdown">${levelHtml || '<p style="font-size:12.5px;color:var(--ink-soft);">Belum ada data.</p>'}</div>
+    <div class="result-note">
+      📌 Uraian (nomor ${r.essayList[0]?.nomor}–${r.essayList[r.essayList.length-1]?.nomor}): ${r.essayChecked}/${r.essayList.length} dilihat kunci &amp; rubriknya. Skor esai <b>dinilai manual oleh guru</b> dan tidak termasuk dalam skor otomatis di atas.
+      ${unanswered.length ? `<br>📝 Soal belum dijawab: ${unanswered.join(", ")}.` : ""}
+      ${uncheckedAuto.length ? `<br>🔎 Soal sudah dijawab tapi belum dikoreksi: ${uncheckedAuto.join(", ")}.` : ""}
+    </div>
+    <div class="result-actions">
+      <button class="btn btn-ghost" id="btn-close-result">Tutup</button>
+      <button class="btn btn-primary" id="btn-reset" style="background:var(--bad);">Ulangi dari Awal</button>
+    </div>
+  `;
+  $("#result-modal").innerHTML = modal;
+  $("#result-overlay").classList.add("show");
+  $("#btn-close-result").addEventListener("click", ()=>$("#result-overlay").classList.remove("show"));
+  $("#btn-reset").addEventListener("click", ()=>{ askConfirmReset(); });
+}
+function round1(n){ return Math.round(n*10)/10; }
+
+/* ---------- Reset confirm ---------- */
+function askConfirmReset(){
+  $("#confirm-text").textContent = "Semua jawaban dan progres akan dihapus dan tidak dapat dikembalikan. Yakin ingin mengulang dari awal?";
+  $("#confirm-overlay").classList.add("show");
+}
+$("#confirm-cancel").addEventListener("click", ()=>$("#confirm-overlay").classList.remove("show"));
+$("#confirm-ok").addEventListener("click", ()=>{
+  localStorage.removeItem(STORAGE_KEY);
+  state = {studentName:"", currentIndex:0, answers:{}, checked:{}, correctness:{}};
+  $("#confirm-overlay").classList.remove("show");
+  $("#result-overlay").classList.remove("show");
+  showStartScreen();
+});
+
+/* ---------- Start screen (nama siswa) ---------- */
+const startOverlay = $("#start-overlay");
+const inputNama = $("#input-nama");
+const btnMulai = $("#btn-mulai");
+const startErr = $("#start-err");
+
+function showStartScreen(){
+  inputNama.value = "";
+  btnMulai.disabled = true;
+  startErr.textContent = "";
+  startOverlay.classList.remove("hidden");
+  setTimeout(()=>inputNama.focus(), 50);
+}
+function hideStartScreen(){ startOverlay.classList.add("hidden"); }
+
+function updateStudentHeader(){
+  $("#hdr-student").textContent = state.studentName ? ("Nama: " + state.studentName) : "";
+}
+
+inputNama.addEventListener("input", ()=>{
+  btnMulai.disabled = inputNama.value.trim().length < 3;
+  startErr.textContent = "";
+});
+inputNama.addEventListener("keydown", e=>{
+  if(e.key==="Enter" && !btnMulai.disabled) btnMulai.click();
+});
+btnMulai.addEventListener("click", ()=>{
+  const v = inputNama.value.trim();
+  if(v.length < 3){ startErr.textContent = "Nama minimal 3 huruf ya."; return; }
+  state.studentName = v;
+  saveState();
+  hideStartScreen();
+  startApp();
+});
+
+function startApp(){
+  updateStudentHeader();
+  buildNav();
+  renderQuestion();
+  if(isMobile()) bodyWrap.classList.add("sidebar-hidden");
+}
+
+/* ---------- Init ---------- */
+function init(){
+  loadState();
+  if(state.currentIndex>=RAW.length) state.currentIndex = 0;
+  if(state.studentName && state.studentName.trim().length>0){
+    hideStartScreen();
+    startApp();
+  } else {
+    showStartScreen();
+  }
+}
+init();
+
+})();
+</script>
+</body>
+</html>
